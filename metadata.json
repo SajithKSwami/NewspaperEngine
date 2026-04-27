@@ -1,0 +1,6 @@
+{
+  "name": "NIE-5 Intelligence Engine",
+  "description": "An advanced newspaper intelligence scanner that detects cross-publication patterns, extracts hidden connections, and generates Wikipedia-style summaries using Gemini AI.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
