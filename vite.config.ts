@@ -22,7 +22,7 @@ export default defineConfig(({ mode }) => {
       port: 5173,
       hmr: process.env.DISABLE_HMR !== 'true',
       proxy: {
-        '/api': 'http://localhost:3000',
+        '/api': 'http://localhost:3001',
       },
     },
   };

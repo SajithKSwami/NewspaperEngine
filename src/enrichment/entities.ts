@@ -54,7 +54,7 @@ async function extractEntities(title: string, content: string): Promise<Extracte
   const response = await ai.models.generateContent({
     model: 'gemini-2.5-flash',
     contents: [
-      { role: 'user', parts: [{ text: `Title: ${title}\n\nContent: ${content}` }] },
+      { role: 'user', parts: [{ text: `Title: ${title}\n\nContent: ${content.slice(0, 800)}` }] },
     ],
     config: {
       systemInstruction: SYSTEM_PROMPT,
