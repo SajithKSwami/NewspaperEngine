@@ -6,3 +6,6 @@ coverage/
 *.log
 .env*
 !.env.example
+newspaper.db
+newspaper.db-shm
+newspaper.db-wal

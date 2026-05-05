@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+:root {
+  --node-entity: #6366f1;
+  --node-article: #0ea5e9;
+  --edge-co-mention: #94a3b8;
+  --edge-divergence: #ef4444;
+  --edge-spike: #f59e0b;
+}
+
+body {
+  margin: 0;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-family: system-ui, sans-serif;
+}
+
+.react-flow__node-entity,
+.react-flow__node-article {
+  border-radius: 6px;
+  font-size: 11px;
+  padding: 4px 8px;
+  max-width: 160px;
+  text-align: center;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: border-color 0.15s;
+}
+
+.react-flow__node-entity {
+  background: #312e81;
+  border-color: #6366f1;
+  color: #c7d2fe;
+}
+
+.react-flow__node-article {
+  background: #0c4a6e;
+  border-color: #0ea5e9;
+  color: #bae6fd;
+}
+
+.react-flow__node-entity:hover,
+.react-flow__node-article:hover {
+  border-color: white;
+}
+
+.react-flow__edge-co_mention path { stroke: var(--edge-co-mention); }
+.react-flow__edge-sentiment_divergence path { stroke: var(--edge-divergence); }
+.react-flow__edge-temporal_spike path { stroke: var(--edge-spike); }
