@@ -52,18 +52,19 @@ async function extractEntities(title: string, content: string): Promise<Extracte
   const ai = getAI();
 
   const response = await ai.models.generateContent({
-    model: 'gemini-2.0-flash',
+    model: 'gemini-2.5-flash',
     contents: [
       { role: 'user', parts: [{ text: `Title: ${title}\n\nContent: ${content}` }] },
     ],
     config: {
       systemInstruction: SYSTEM_PROMPT,
       temperature: 0.1,
-      maxOutputTokens: 1024,
+      maxOutputTokens: 2048,
+      responseMimeType: 'application/json',
     },
   });
 
-  const raw = response.text?.trim() ?? '';
+  const raw = (response.text ?? '').trim();
   const parsed: ExtractionResult = JSON.parse(raw);
   return parsed.entities ?? [];
 }

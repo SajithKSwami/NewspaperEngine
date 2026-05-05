@@ -7,8 +7,8 @@ export type Source = {
 
 export const SOURCES: Source[] = [
   // Tier 1 — wire services (most authoritative, earliest signal)
-  { name: 'Reuters',        url: 'https://feeds.reuters.com/reuters/topNews',                            domain: 'world',    tier: 1 },
-  { name: 'AP News',        url: 'https://feeds.apnews.com/rss/apf-topnews',                             domain: 'world',    tier: 1 },
+  { name: 'Reuters',        url: 'https://feeds.reuters.com/reuters/worldNews',                          domain: 'world',    tier: 1 },
+  { name: 'AP News',        url: 'https://rsshub.app/apnews/topics/apf-topnews',                         domain: 'world',    tier: 1 },
   { name: 'BBC World',      url: 'https://feeds.bbci.co.uk/news/world/rss.xml',                          domain: 'world',    tier: 1 },
   { name: 'Al Jazeera',     url: 'https://www.aljazeera.com/xml/rss/all.xml',                            domain: 'world',    tier: 1 },
 
