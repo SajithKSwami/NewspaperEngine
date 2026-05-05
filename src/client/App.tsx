@@ -18,7 +18,7 @@ export default function App() {
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
 
   function handleEntityClick(id: string) {
-    setFocusEntityId(id);
+    setFocusEntityId(id || undefined);
   }
 
   function handleNodeClick(node: Node) {
@@ -52,22 +52,11 @@ export default function App() {
             {label}
           </button>
         ))}
-        {focusEntityId && (
-          <>
-            <span className="mx-2 text-slate-600">|</span>
-            <button
-              onClick={() => setFocusEntityId(undefined)}
-              className="px-2 py-1 rounded text-indigo-400 hover:text-indigo-200"
-            >
-              ✕ Clear focus
-            </button>
-          </>
-        )}
       </div>
 
       {/* Main layout */}
       <div className="flex flex-1 overflow-hidden">
-        <SidePanel onEntityClick={handleEntityClick} />
+        <SidePanel onEntityClick={handleEntityClick} activeEntityId={focusEntityId} />
 
         <div className="flex-1 flex flex-col overflow-hidden relative">
           <GraphView

@@ -38,31 +38,56 @@ const EDGE_COLORS: Record<string, string> = {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function toFlow(data: GraphData, focusEntityId?: string): { nodes: Node[]; edges: Edge[] } {
-  // Deterministic layout: entities in a circle, articles spread around them
-  const entityIds = data.nodes.filter(n => n.nodeType === 'entity').map(n => n.id);
-  const articleIds = data.nodes.filter(n => n.nodeType === 'article').map(n => n.id);
+  // When a filter is active, reduce to just that entity's neighbourhood.
+  const activeEdges = focusEntityId
+    ? data.edges.filter(e => e.entityId === focusEntityId)
+    : data.edges;
+
+  const visibleNodeIds = new Set<string>();
+  if (focusEntityId) {
+    visibleNodeIds.add(focusEntityId);
+    for (const e of activeEdges) {
+      visibleNodeIds.add(e.source);
+      visibleNodeIds.add(e.target);
+    }
+  }
+
+  const visibleNodes = focusEntityId
+    ? data.nodes.filter(n => visibleNodeIds.has(n.id))
+    : data.nodes;
+
+  // Layout: entities in a circle, articles clustered near their entity.
+  const entityIds = visibleNodes.filter(n => n.nodeType === 'entity').map(n => n.id);
+  const articleIds = visibleNodes.filter(n => n.nodeType === 'article').map(n => n.id);
 
   const entityPos = new Map<string, { x: number; y: number }>();
-  entityIds.forEach((id, i) => {
-    const angle = (2 * Math.PI * i) / entityIds.length;
-    entityPos.set(id, { x: 400 + Math.cos(angle) * 300, y: 300 + Math.sin(angle) * 300 });
-  });
+  if (focusEntityId && entityIds.length === 1) {
+    // Single entity: put it in the centre, articles in a ring around it.
+    entityPos.set(entityIds[0], { x: 0, y: 0 });
+  } else {
+    entityIds.forEach((id, i) => {
+      const angle = (2 * Math.PI * i) / entityIds.length;
+      entityPos.set(id, { x: 400 + Math.cos(angle) * 300, y: 300 + Math.sin(angle) * 300 });
+    });
+  }
+
+  // Map each article to its primary entity for clustering.
+  const articleEntity = new Map<string, string>();
+  for (const e of activeEdges) {
+    if (!articleEntity.has(e.source)) articleEntity.set(e.source, e.entityId);
+    if (!articleEntity.has(e.target)) articleEntity.set(e.target, e.entityId);
+  }
 
   const articlePos = new Map<string, { x: number; y: number }>();
-  const connectedEntities = new Map<string, string>(); // articleId → entityId
-  data.edges.forEach(e => {
-    connectedEntities.set(e.source, e.entityId);
-    connectedEntities.set(e.target, e.entityId);
-  });
-
+  const radius = focusEntityId ? 260 : 120;
   articleIds.forEach((id, i) => {
-    const entityId = connectedEntities.get(id);
-    const base = entityId && entityPos.get(entityId) ? entityPos.get(entityId)! : { x: 400, y: 300 };
+    const eId = articleEntity.get(id);
+    const base = (eId && entityPos.get(eId)) ?? { x: 400, y: 300 };
     const angle = (2 * Math.PI * i) / articleIds.length;
-    articlePos.set(id, { x: base.x + Math.cos(angle) * 120, y: base.y + Math.sin(angle) * 120 });
+    articlePos.set(id, { x: base.x + Math.cos(angle) * radius, y: base.y + Math.sin(angle) * radius });
   });
 
-  const nodes: Node[] = data.nodes.map(n => ({
+  const nodes: Node[] = visibleNodes.map(n => ({
     id: n.id,
     type: n.nodeType,
     position: n.nodeType === 'entity'
@@ -72,7 +97,7 @@ function toFlow(data: GraphData, focusEntityId?: string): { nodes: Node[]; edges
     selected: n.id === focusEntityId,
   }));
 
-  const edges: Edge[] = data.edges.map(e => ({
+  const edges: Edge[] = activeEdges.map(e => ({
     id: e.id,
     source: e.source,
     target: e.target,
