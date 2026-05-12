@@ -60,14 +60,27 @@ function toFlow(data: GraphData, focusEntityId?: string): { nodes: Node[]; edges
   const entityIds = visibleNodes.filter(n => n.nodeType === 'entity').map(n => n.id);
   const articleIds = visibleNodes.filter(n => n.nodeType === 'article').map(n => n.id);
 
+  // Card dimensions (px) — used to compute minimum non-overlapping radius.
+  const CARD_W = 180;
+  const CARD_H = 80;
+  const CARD_GAP = 20; // minimum gap between cards
+
+  // Minimum radius so N cards fit around a circle without overlapping.
+  function minRadius(count: number): number {
+    if (count <= 1) return 0;
+    const slotSize = Math.max(CARD_W, CARD_H) + CARD_GAP;
+    return Math.ceil((count * slotSize) / (2 * Math.PI));
+  }
+
   const entityPos = new Map<string, { x: number; y: number }>();
   if (focusEntityId && entityIds.length === 1) {
     // Single entity: put it in the centre, articles in a ring around it.
     entityPos.set(entityIds[0], { x: 0, y: 0 });
   } else {
+    const entityRadius = Math.max(300, minRadius(entityIds.length));
     entityIds.forEach((id, i) => {
       const angle = (2 * Math.PI * i) / entityIds.length;
-      entityPos.set(id, { x: 400 + Math.cos(angle) * 300, y: 300 + Math.sin(angle) * 300 });
+      entityPos.set(id, { x: 400 + Math.cos(angle) * entityRadius, y: 300 + Math.sin(angle) * entityRadius });
     });
   }
 
@@ -78,14 +91,24 @@ function toFlow(data: GraphData, focusEntityId?: string): { nodes: Node[]; edges
     if (!articleEntity.has(e.target)) articleEntity.set(e.target, e.entityId);
   }
 
+  // Group articles by entity so each cluster is sized independently.
+  const articlesByEntity = new Map<string, string[]>();
+  for (const id of articleIds) {
+    const eId = articleEntity.get(id) ?? '__none__';
+    if (!articlesByEntity.has(eId)) articlesByEntity.set(eId, []);
+    articlesByEntity.get(eId)!.push(id);
+  }
+
   const articlePos = new Map<string, { x: number; y: number }>();
-  const radius = focusEntityId ? 260 : 120;
-  articleIds.forEach((id, i) => {
-    const eId = articleEntity.get(id);
-    const base = (eId && entityPos.get(eId)) ?? { x: 400, y: 300 };
-    const angle = (2 * Math.PI * i) / articleIds.length;
-    articlePos.set(id, { x: base.x + Math.cos(angle) * radius, y: base.y + Math.sin(angle) * radius });
-  });
+  for (const [eId, ids] of articlesByEntity) {
+    const base = (eId !== '__none__' && entityPos.get(eId)) ?? { x: 400, y: 300 };
+    const baseRadius = focusEntityId ? 280 : 140;
+    const radius = Math.max(baseRadius, minRadius(ids.length));
+    ids.forEach((id, i) => {
+      const angle = (2 * Math.PI * i) / ids.length;
+      articlePos.set(id, { x: base.x + Math.cos(angle) * radius, y: base.y + Math.sin(angle) * radius });
+    });
+  }
 
   const nodes: Node[] = visibleNodes.map(n => ({
     id: n.id,
